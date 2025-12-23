@@ -1,1 +1,4 @@
-.idea
+.idea/
+test.py
+**/rub/
+./raw_data
