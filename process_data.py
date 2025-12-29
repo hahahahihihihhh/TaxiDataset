@@ -140,7 +140,7 @@ def load_weather():
             time.sleep(10)
         with open(weather_data_file_path, "r", encoding="utf-8") as f:
             weather_data = json.load(f)
-        # todo 提取latitude，longitude，time，METEOROLOGICAL_VARS中的变量，以及grid_id，保存为csv文件（按照grid_id展开）
+        # 提取latitude，longitude，time，METEOROLOGICAL_VARS中的变量，以及grid_id，保存为csv文件（按照grid_id展开）
         flatten_to_rows(weather_data, grid_id, lon_center, lat_center, METEOROLOGICAL_VARS, all_weather_data)
         print("calculating....{}/{}".format(grid_id, H * W))
     pd.DataFrame(all_weather_data).to_csv(weather_all_grids_file_path, index=False, encoding="utf-8")
