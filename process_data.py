@@ -1,17 +1,23 @@
+import csv
 import json
 import os.path
 import time
 from collections import defaultdict
+
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.colors import BoundaryNorm
+
 from utils.setting import METEOROLOGICAL_VARS, METEOROLOGICAL_VARS_DIVIDE
 from utils.utils import fetch_open_meteo_hourly, merge_open_meteo_hourly_responses_in_order, build_poi_filter_csv, \
     make_default_value, discretize_value
 import os
 import pandas as pd
 
-
+dataset = "NYCBike"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
-cfg = settings["NYCBike"]
+cfg = settings[dataset]
 
 prefix_path_osm = cfg["paths"]["prefix_path_osm"]
 prefix_path_poi = cfg["paths"]["prefix_path_poi"]
@@ -19,6 +25,7 @@ prefix_path_weather = cfg["paths"]["prefix_path_weather"]
 osm_file = cfg["paths"]["osm_file"]
 poi_filter_file = cfg["paths"]["poi_filter_file"]
 weather_data_file = cfg["paths"]["weather_data_file"]
+weather_all_grids_file = cfg["paths"]["weather_all_grids_file"]
 lon_min = cfg["grid"]["lon_min"]
 lon_max = cfg["grid"]["lon_max"]
 lat_min = cfg["grid"]["lat_min"]
@@ -72,7 +79,42 @@ def gen_poi_kg():
     poi_kg_df.to_csv(os.path.join(prefix_path_poi, "poi_kg.csv"), index=False, encoding="utf-8")
 
 
+def flatten_to_rows(weather_data, grid_id, lon_center, lat_center, met_vars, all_weather_data):
+    """
+    将 Open-Meteo hourly 响应展开为行记录（按小时一行）
+    输出列：grid_id, latitude, longitude, time, <met_vars...>
+    """
+    lon = lon_center
+    lat = lat_center
+    hourly = weather_data.get("hourly", {}) or {}
+    times = hourly.get("time", []) or []
+    n = len(times)
+    # 取出各变量数组，长度不足则补 None，缺变量也补 None
+    series = {}
+    for v in met_vars:
+        arr = hourly.get(v, None)
+        if arr is None:
+            series[v] = [None] * n
+        else:
+            # 防御：万一长度和 time 不一致
+            if len(arr) < n:
+                series[v] = list(arr) + [None] * (n - len(arr))
+            else:
+                series[v] = list(arr[:n])
+    for i in range(n):
+        all_weather_data["grid_id"].append(grid_id)
+        all_weather_data["latitude"].append(lat)
+        all_weather_data["longitude"].append(lon)
+        all_weather_data["time"].append(times[i])
+        for v in met_vars:
+            all_weather_data[v].append(series[v][i])
+
+
 def load_weather():
+    weather_all_grids_file_path = os.path.join(prefix_path_weather, weather_all_grids_file)
+    os.makedirs(os.path.dirname(weather_all_grids_file_path), exist_ok=True)
+    weather_fields = ["grid_id", "latitude", "longitude", "time"] + list(METEOROLOGICAL_VARS)
+    all_weather_data = {field: [] for field in weather_fields}
     for grid_id in range(0, H * W):
         lon_center, lat_center = grid_to_center_coord(grid_id)
         # weatherbit
@@ -86,15 +128,22 @@ def load_weather():
         #         "key": "837b6655d5324622947fbf962073e22f"
         #     }
         # )
-        all_resp = []
-        for time_split in time_splits:
-            resp = fetch_open_meteo_hourly(lon_center, lat_center, time_split[0], time_split[1], METEOROLOGICAL_VARS)
-            all_resp.append(resp)
-        weather_data = merge_open_meteo_hourly_responses_in_order(all_resp)
-        with open(f"{prefix_path_weather}/{weather_data_file.format(grid_id)}", "w", encoding="utf-8") as file:
-            json.dump(weather_data, file, ensure_ascii=False, indent=2)
+        weather_data_file_path = f"{prefix_path_weather}/{weather_data_file.format(grid_id)}"
+        if not os.path.exists(weather_data_file_path):
+            all_resp = []
+            for time_split in time_splits:
+                resp = fetch_open_meteo_hourly(lon_center, lat_center, time_split[0], time_split[1], METEOROLOGICAL_VARS)
+                all_resp.append(resp)
+            weather_data = merge_open_meteo_hourly_responses_in_order(all_resp)
+            with open(weather_data_file_path, "w", encoding="utf-8") as file:
+                json.dump(weather_data, file, ensure_ascii=False, indent=2)
+            time.sleep(10)
+        with open(weather_data_file_path, "r", encoding="utf-8") as f:
+            weather_data = json.load(f)
+        # todo 提取latitude，longitude，time，METEOROLOGICAL_VARS中的变量，以及grid_id，保存为csv文件（按照grid_id展开）
+        flatten_to_rows(weather_data, grid_id, lon_center, lat_center, METEOROLOGICAL_VARS, all_weather_data)
         print("calculating....{}/{}".format(grid_id, H * W))
-        time.sleep(10)
+    pd.DataFrame(all_weather_data).to_csv(weather_all_grids_file_path, index=False, encoding="utf-8")
 
 
 def gen_weather_kg():
@@ -140,6 +189,5 @@ def gen_weather_kg():
 
 if __name__ == "__main__":
     # gen_poi_kg()
-    gen_weather_kg()
-
-
+    # gen_weather_kg()
+    load_weather()
