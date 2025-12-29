@@ -1,11 +1,41 @@
 {
+  "NYCTAXI": {
+    "paths": {
+      "assist_data_path": "./raw_data/NYCTaxi/assist_data/",
+      "prefix_path_poi": "./raw_data/NYCTaxi/assist_data/POI",
+      "prefix_path_weather": "./raw_data/NYCTaxi/assist_data/weather/2014-03",
+      "prefix_path_meteor_distr": "./raw_data/NYCTaxi/assist_data/weather/2014-03/meteor_distr",
+      "osm_file_path": "./raw_data/NYCTaxi/assist_data/new-york-251207.osm.pbf",
+      "osm_basemap_cache": "./raw_data/NYCTaxi/assist_data/cache/ny_bbox_roads.gpkg",
+      "poi_filter_file": "poi_filter.csv",
+      "weather_data_file": "nyc_weather_2014-03_{}.json",
+      "weather_all_grids_file": "nyc_weather_2014-03.csv"
+    },
+    "grid": {
+      "lon_min": -75.989,
+      "lon_max": -71.134,
+      "lat_min": 39.347,
+      "lat_max": 42.357,
+      "H": 10,
+      "W": 20
+    },
+    "time_splits": [
+      ["2014-03-01", "2014-03-10"],
+      ["2014-03-11", "2014-03-20"],
+      ["2014-03-21", "2014-03-31"]
+    ],
+    "start_time": "2014-03-01 14:00:00",
+    "end_time": "2014-04-31 14:00:00"
+  },
+
   "NYCBike": {
     "paths": {
-      "prefix_path_osm": "./raw_data/NYCBike/assist_data",
+      "assist_data_path": "./raw_data/NYCBike/assist_data/",
       "prefix_path_poi": "./raw_data/NYCBike/assist_data/POI",
       "prefix_path_weather": "./raw_data/NYCBike/assist_data/weather/2014-04",
       "prefix_path_meteor_distr": "./raw_data/NYCBike/assist_data/weather/2014-04/meteor_distr",
-      "osm_file": "new-york-251207.osm.pbf",
+      "osm_file_path": "./raw_data/NYCBike/assist_data/new-york-251207.osm.pbf",
+      "osm_basemap_cache": "./raw_data/NYCBike/assist_data/cache/ny_bbox_roads.gpkg",
       "poi_filter_file": "poi_filter.csv",
       "weather_data_file": "nyc_weather_2014-04_{}.json",
       "weather_all_grids_file": "nyc_weather_2014-04.csv"
@@ -20,7 +50,7 @@
     },
     "time_splits": [
       ["2014-04-01", "2014-04-10"],
-      ["2014-04-01", "2014-04-10"],
+      ["2014-04-11", "2014-04-20"],
       ["2014-04-21", "2014-04-30"]
     ],
     "start_time": "2014-04-01 14:00:00",
@@ -29,11 +59,11 @@
 
   "TDRIVE": {
     "paths": {
-      "prefix_path_osm": "./raw_data/TDRIVE/assist_data",
+      "assist_data_path": "./raw_data/TDRIVE/assist_data/",
       "prefix_path_poi": "./raw_data/TDRIVE/assist_data/POI",
       "prefix_path_weather": "./raw_data/TDRIVE/assist_data/weather/2015-06",
       "prefix_path_meteor_distr": "./raw_data/TDRIVE/assist_data/weather/2015-06/meteor_distr",
-      "osm_file": "beijing-251207.osm.pbf",
+      "osm_file_path": "./raw_data/TDRIVE/assist_data/beijing-251207.osm.pbf",
       "poi_filter_file": "poi_filter.csv",
       "weather_data_file": "bj_weather_2015-06_{}.json",
       "weather_all_grids_file": "bj_weather_2015-06.csv"
@@ -57,6 +87,7 @@
 
   "SZTaxi": {
     "paths": {
+      "assist_data_path": "./raw_data/SZTaxi/assist_data/",
       "prefix_path_osm": "",
       "prefix_path_poi": "",
       "prefix_path_weather": "./raw_data/SZTaxi/assist_data/weather",

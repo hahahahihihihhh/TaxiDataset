@@ -155,11 +155,53 @@ def plot_heatmap_from_df(df_result, met_var="temperature_2m", n_bins=10):
     plt.show()
 
 
-def weather_horiz_distr_show(time, METEOROLOGICAL_VAR):
+def weather_horiz_distr_show(time, meteorological_var):
     weather_all_grids_file_path = os.path.join(prefix_path_weather, weather_all_grids_file)
     df_weather = pd.read_csv(weather_all_grids_file_path)
-    df_result = df_weather[df_weather["time"] == time][["latitude", "longitude", "time", METEOROLOGICAL_VAR]]
-    plot_heatmap_from_df(df_result, METEOROLOGICAL_VAR)
+    df_result = df_weather[df_weather["time"] == time][["latitude", "longitude", "time", meteorological_var]]
+    plot_heatmap_from_df(df_result, meteorological_var)
+
+
+def plot_meteorological_var_daily(df_day, meteorological_var, date=None):
+    # 1) 确保 time 是 datetime
+    df_day = df_day.copy()
+    df_day["time"] = pd.to_datetime(df_day["time"], errors="coerce")
+    # 2) 丢掉无法解析的时间行
+    if df_day.empty:
+        raise ValueError("df_day has no valid datetime in column 'time' after parsing.")
+    # 3) 按小时聚合
+    df_hourly = (
+        df_day
+        .groupby(df_day["time"].dt.hour)[meteorological_var]
+        .mean()
+        .reset_index()
+        .rename(columns={"time": "hour"})
+        .sort_values("hour")
+    )
+    # 4) 画图
+    plt.figure(figsize=(8, 4))
+    plt.plot(df_hourly["hour"], df_hourly[meteorological_var], marker="o")
+    plt.xticks(range(0, 24))
+    plt.xlabel("Hour of Day")
+    plt.ylabel(meteorological_var)
+    if date is None:
+        # 从数据里推断日期（取第一条）
+        date = df_day["time"].dt.date.iloc[0]
+    plt.title(f"{meteorological_var} daily variation on {date}")
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+    return df_hourly
+
+
+def weather_time_distr_show(date, meteorological_var):
+    grid_id = 2
+    weather_all_grids_file_path = os.path.join(prefix_path_weather, weather_all_grids_file)
+    df_weather = pd.read_csv(weather_all_grids_file_path)
+    df_result = df_weather.loc[df_weather["time"].str.startswith(date) & (df_weather["grid_id"] == grid_id),
+                                ["time", meteorological_var]]
+    print(df_result)
+    plot_meteorological_var_daily(df_result, meteorological_var)
 
 
 def analyze_weather_horiz_distr():
@@ -170,7 +212,8 @@ def analyze_weather_horiz_distr():
     # )
     # for time in times:
     #     weather_horiz_distr_count(time)
-    weather_horiz_distr_show("2014-04-15T00:00", "temperature_2m")
+    # weather_horiz_distr_show("2014-04-15T00:00", "wind_speed_10m")
+    weather_time_distr_show("2014-04-01", "wind_speed_10m")
 
 
 if __name__ == "__main__":

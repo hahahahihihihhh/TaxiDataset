@@ -1,28 +1,22 @@
-import csv
 import json
 import os.path
 import time
 from collections import defaultdict
-
-import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.colors import BoundaryNorm
-
 from utils.setting import METEOROLOGICAL_VARS, METEOROLOGICAL_VARS_DIVIDE
 from utils.utils import fetch_open_meteo_hourly, merge_open_meteo_hourly_responses_in_order, build_poi_filter_csv, \
     make_default_value, discretize_value
 import os
 import pandas as pd
 
-dataset = "NYCBike"
+
+dataset = "NYCTAXI"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset]
 
-prefix_path_osm = cfg["paths"]["prefix_path_osm"]
 prefix_path_poi = cfg["paths"]["prefix_path_poi"]
 prefix_path_weather = cfg["paths"]["prefix_path_weather"]
-osm_file = cfg["paths"]["osm_file"]
+osm_file_path = cfg["paths"]["osm_file_path"]
 poi_filter_file = cfg["paths"]["poi_filter_file"]
 weather_data_file = cfg["paths"]["weather_data_file"]
 weather_all_grids_file = cfg["paths"]["weather_all_grids_file"]
@@ -59,9 +53,8 @@ def grid_to_center_coord(grid_id):
 
 
 def gen_poi_kg():
-    osm_path = f"{prefix_path_osm}/{osm_file}"
     poi_filter_path = f"{prefix_path_poi}/{poi_filter_file}"
-    build_poi_filter_csv(osm_path, poi_filter_path)
+    build_poi_filter_csv(osm_file_path, poi_filter_path)
     poi_filter = pd.read_csv(poi_filter_path)
     poi_filter["grid_id"] = poi_filter.apply(
         lambda r: coord_to_grid(r["lng"], r["lat"]),
@@ -147,7 +140,8 @@ def load_weather():
 
 
 def gen_weather_kg():
-    # load_weather()
+    load_weather()
+    exit(0)
     weather_kg = []
     for grid_id in range(0, H * W):
         weather_path = os.path.join(
@@ -189,5 +183,5 @@ def gen_weather_kg():
 
 if __name__ == "__main__":
     # gen_poi_kg()
-    # gen_weather_kg()
-    load_weather()
+    gen_weather_kg()
+    # load_weather()
