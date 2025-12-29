@@ -11,7 +11,7 @@ import pandas as pd
 
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
-cfg = settings["SZTaxi"]
+cfg = settings["NYCBike"]
 
 prefix_path_osm = cfg["paths"]["prefix_path_osm"]
 prefix_path_poi = cfg["paths"]["prefix_path_poi"]
@@ -73,7 +73,6 @@ def gen_poi_kg():
 
 
 def load_weather():
-    # grid_id2weather_data = {}
     for grid_id in range(0, H * W):
         lon_center, lat_center = grid_to_center_coord(grid_id)
         # weatherbit
@@ -99,7 +98,7 @@ def load_weather():
 
 
 def gen_weather_kg():
-    load_weather()
+    # load_weather()
     weather_kg = []
     for grid_id in range(0, H * W):
         weather_path = os.path.join(
@@ -127,7 +126,7 @@ def gen_weather_kg():
                     (grid_id, var, label, t)
                 )
         print(f"processed weather grid... {grid_id}/{H * W}")
-        # 保存为 CSV
+    # 保存为 CSV
     weather_kg_df = pd.DataFrame(
         weather_kg,
         columns=["grid_id", "relation", "value", "time"]

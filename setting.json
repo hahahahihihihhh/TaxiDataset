@@ -4,6 +4,7 @@
       "prefix_path_osm": "./raw_data/NYCBike/assist_data",
       "prefix_path_poi": "./raw_data/NYCBike/assist_data/POI",
       "prefix_path_weather": "./raw_data/NYCBike/assist_data/weather/2014-04",
+      "prefix_path_meteor_distr": "./raw_data/NYCBike/assist_data/weather/2014-04/meteor_distr",
       "osm_file": "new-york-251207.osm.pbf",
       "poi_filter_file": "poi_filter.csv",
       "weather_data_file": "nyc_weather_2014-04_{}.json"
@@ -20,7 +21,9 @@
       ["2014-04-01", "2014-04-10"],
       ["2014-04-01", "2014-04-10"],
       ["2014-04-21", "2014-04-30"]
-    ]
+    ],
+    "start_time": "2014-04-01 14:00:00",
+    "end_time": "2014-04-30 14:00:00"
   },
 
   "TDRIVE": {
@@ -28,6 +31,7 @@
       "prefix_path_osm": "./raw_data/TDRIVE/assist_data",
       "prefix_path_poi": "./raw_data/TDRIVE/assist_data/POI",
       "prefix_path_weather": "./raw_data/TDRIVE/assist_data/weather/2015-06",
+      "prefix_path_meteor_distr": "./raw_data/TDRIVE/assist_data/weather/2015-06/meteor_distr",
       "osm_file": "beijing-251207.osm.pbf",
       "poi_filter_file": "poi_filter.csv",
       "weather_data_file": "bj_weather_2015-06_{}.json"
@@ -44,7 +48,9 @@
       ["2015-06-01", "2015-06-10"],
       ["2015-06-11", "2015-06-20"],
       ["2015-06-21", "2015-06-30"]
-    ]
+    ],
+    "start_time": "2015-06-01 14:00:00",
+    "end_time": "2015-06-30 14:00:00"
   },
 
   "SZTaxi": {

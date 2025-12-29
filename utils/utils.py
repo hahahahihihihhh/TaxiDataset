@@ -9,11 +9,10 @@ import requests
 from pyrosm import OSM
 from requests.adapters import HTTPAdapter
 import time
-from datetime import datetime
 from copy import deepcopy
 from urllib3 import Retry
-from raw_data.setting import CATES_LABELS, CATES, IGNORE_VALUE_SET
-from raw_data.setting import EXPAND_KEYS
+from .setting import CATES_LABELS, CATES, IGNORE_VALUE_SET
+from .setting import EXPAND_KEYS
 
 
 def _build_session():
@@ -269,3 +268,19 @@ def discretize_value(value, divide_dict):
         if value <= upper:
             return label
     return None
+
+
+def ensure_dir(path: str):
+    """
+    确保目录存在（若传入的是文件路径，则创建其父目录）
+
+    Parameters
+    ----------
+    path : str
+        目录路径 或 文件路径
+    """
+    # 如果是文件路径，取父目录
+    dir_path = path if os.path.isdir(path) or not os.path.splitext(path)[1] \
+        else os.path.dirname(path)
+    if dir_path and not os.path.exists(dir_path):
+        os.makedirs(dir_path, exist_ok=True)
