@@ -55,6 +55,7 @@ def grid_to_center_coord(grid_id):
 def gen_poi_kg():
     poi_filter_path = f"{prefix_path_poi}/{poi_filter_file}"
     build_poi_filter_csv(osm_file_path, poi_filter_path)
+    exit(0)
     poi_filter = pd.read_csv(poi_filter_path)
     poi_filter["grid_id"] = poi_filter.apply(
         lambda r: coord_to_grid(r["lng"], r["lat"]),
@@ -140,8 +141,7 @@ def load_weather():
 
 
 def gen_weather_kg():
-    load_weather()
-    exit(0)
+    # load_weather()
     weather_kg = []
     for grid_id in range(0, H * W):
         weather_path = os.path.join(
@@ -182,6 +182,6 @@ def gen_weather_kg():
 
 
 if __name__ == "__main__":
-    # gen_poi_kg()
-    gen_weather_kg()
+    gen_poi_kg()
+    # gen_weather_kg()
     # load_weather()
