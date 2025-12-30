@@ -9,7 +9,7 @@ import os
 import pandas as pd
 
 
-dataset = "NYCBike"
+dataset = "NYCTAXI"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset]
@@ -195,7 +195,7 @@ def plot_meteorological_var_daily(df_day, meteorological_var, date=None):
 
 
 def weather_time_distr_show(date, meteorological_var):
-    grid_id = 2
+    grid_id = 0
     weather_all_grids_file_path = os.path.join(prefix_path_weather, weather_all_grids_file)
     df_weather = pd.read_csv(weather_all_grids_file_path)
     df_result = df_weather.loc[df_weather["time"].str.startswith(date) & (df_weather["grid_id"] == grid_id),
@@ -212,8 +212,8 @@ def analyze_weather_horiz_distr():
     # )
     # for time in times:
     #     weather_horiz_distr_count(time)
-    # weather_horiz_distr_show("2014-04-15T00:00", "wind_speed_10m")
-    weather_time_distr_show("2014-04-01", "wind_speed_10m")
+    # weather_horiz_distr_show("2014-03-15T00:00", "relative_humidity_2m")
+    weather_time_distr_show("2014-03-01", "relative_humidity_2m")
 
 
 if __name__ == "__main__":
