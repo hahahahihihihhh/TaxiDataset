@@ -1,5 +1,6 @@
 import json
 import os.path
+import subprocess
 import time
 from collections import defaultdict
 from utils.setting import METEOROLOGICAL_VARS, METEOROLOGICAL_VARS_DIVIDE
@@ -17,6 +18,9 @@ cfg = settings[dataset]
 prefix_path_poi = cfg["paths"]["prefix_path_poi"]
 prefix_path_weather = cfg["paths"]["prefix_path_weather"]
 osm_file_path = cfg["paths"]["osm_file_path"]
+pbf_chunk_dir = cfg["paths"]["pbf_chunk_dir"]
+pbf_chunk_file = cfg["paths"]["pbf_chunk_file"]
+poi_filter_chunk_file = cfg["paths"]["poi_filter_chunk_file"]
 poi_filter_file = cfg["paths"]["poi_filter_file"]
 weather_data_file = cfg["paths"]["weather_data_file"]
 weather_all_grids_file = cfg["paths"]["weather_all_grids_file"]
@@ -29,6 +33,23 @@ W = cfg["grid"]["W"]
 time_splits = cfg["time_splits"]
 lon_unit = (lon_max - lon_min) / W
 lat_unit = (lat_max - lat_min) / H
+
+
+def cut_osm():
+    os.makedirs(pbf_chunk_dir, exist_ok=True)
+    for row in range(H):
+        for col in range(W):
+            gid = row * W + col
+            minlon = lon_min + col * lon_unit
+            maxlon = lon_min + (col + 1) * lon_unit
+            minlat = lat_min + row * lat_unit
+            maxlat = lat_min + (row + 1) * lat_unit
+            out_pbf = f"{pbf_chunk_dir}/{pbf_chunk_file.format(gid)}"
+            bbox = f"{minlon},{minlat},{maxlon},{maxlat}"
+            cmd = ["osmium", "extract", "-s", "smart", "-S", "relations=false",
+                   "-b", bbox, osm_file_path, "-o", out_pbf, "--overwrite"]
+            print(" ".join(cmd))
+            subprocess.run(cmd, check=True)
 
 
 def coord_to_grid(lon, lat):
@@ -53,9 +74,8 @@ def grid_to_center_coord(grid_id):
 
 
 def gen_poi_kg():
+    # build_poi_filter_csv(osm_file_path, poi_filter_path)
     poi_filter_path = f"{prefix_path_poi}/{poi_filter_file}"
-    build_poi_filter_csv(osm_file_path, poi_filter_path)
-    exit(0)
     poi_filter = pd.read_csv(poi_filter_path)
     poi_filter["grid_id"] = poi_filter.apply(
         lambda r: coord_to_grid(r["lng"], r["lat"]),
@@ -181,7 +201,31 @@ def gen_weather_kg():
     )
 
 
+def gen_poi_kg_chunk():
+    # cut_osm()
+    # for grid_id in range(0, H * W):
+    #     osm_file_path = f"{pbf_chunk_dir}/{pbf_chunk_file.format(grid_id)}"
+    #     poi_filter_path = f"{prefix_path_poi}/poi_filter_chunk/{poi_filter_chunk_file.format(grid_id)}"
+    #     build_poi_filter_csv(osm_file_path, poi_filter_path)
+    #     print("calculating....{}/{}".format(grid_id, H * W))
+    first = True
+    for grid_id in range(H * W):
+        chunk_path = f"{prefix_path_poi}/poi_filter_chunk/{poi_filter_chunk_file.format(grid_id)}"
+        if not os.path.exists(chunk_path):
+            continue
+        df = pd.read_csv(chunk_path)
+        df.to_csv(
+            f"{prefix_path_poi}/{poi_filter_file}",
+            mode="w" if first else "a",
+            header=first,
+            index=False
+        )
+        first = False
+        print("merging....{}/{}".format(grid_id, H * W))
+
+
 if __name__ == "__main__":
     gen_poi_kg()
     # gen_weather_kg()
     # load_weather()
+    # gen_poi_kg_chunk()

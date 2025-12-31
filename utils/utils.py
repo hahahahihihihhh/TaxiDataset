@@ -199,89 +199,61 @@ def build_poi_filter_csv(osm_path, save_path):
 
     out_cols = ["name", "poi_id", "osm_way_id", "building", "amenity",
                 "centroid", "area", "area_ft2", "lat", "lng", "cate"]
-    NYC_BBOX = [-75.989, 39.347, -71.134, 42.357]  # (min_lon, min_lat, max_lon, max_lat)
-    # ---- 1) 读取 POI：bbox + 精准 custom_filter（核心降内存）----
-    # 只让 pyrosm “提取”你 EXPAND_KEYS 涉及到的 tag（能显著减少解压后构建的列/对象）
-    custom_filter = {k: True for k in EXPAND_KEYS}
-
-    osm = OSM(osm_path, bounding_box=NYC_BBOX)
-    pois = osm.get_pois(custom_filter=custom_filter)
-
+    osm = OSM(osm_path)
+    print("loading osm ...")
+    pois = osm.get_pois()
+    print("getting pois ...")
     if pois is None or len(pois) == 0:
         pd.DataFrame(columns=out_cols).to_csv(save_path, index=False, encoding="utf-8")
         return
-
-    # ---- 1.5) 立刻裁列（极关键：减少字符串列/无关列驻留）----
-    # 你后续确实会用到的列：geometry/id/osm_type/name/building/amenity + EXPAND_KEYS
-    need_cols = {"geometry", "id", "osm_type", "name", "building", "amenity"} | set(EXPAND_KEYS)
-    keep = [c for c in pois.columns if c in need_cols]
-    gdf = pois[keep].copy()
-
-    # 尽快释放 pois
-    del pois
-    gc.collect()
-
-    # ---- 2) 用 EXPAND_KEYS 过滤：避免丢掉 shop/tourism/office 等 ----
-    cond = pd.Series(False, index=gdf.index)
+    print("filtering2 ...")
+    cond = pd.Series(False, index=pois.index)
     for k in EXPAND_KEYS:
-        if k in gdf.columns:
-            cond |= gdf[k].notna()
-    gdf = gdf[cond].copy()
-
+        if k in pois.columns:
+            cond |= pois[k].notna()
+    gdf = pois[cond].copy()
     if len(gdf) == 0:
         pd.DataFrame(columns=out_cols).to_csv(save_path, index=False, encoding="utf-8")
         return
-
     # ---- 3) 面积 & 代表点：只拿 geometry 去做 CRS（避免把整表带过去）----
     geom_only = gdf[["geometry"]].copy()
     geom_only = geom_only.set_geometry("geometry")
-
     gdf_3857 = geom_only.to_crs(epsg=3857)
     geom_type = gdf_3857.geometry.geom_type
     is_poly = geom_type.isin(["Polygon", "MultiPolygon"])
-
     area_m2 = pd.Series(0.0, index=gdf_3857.index)
     area_m2[is_poly] = gdf_3857.loc[is_poly, "geometry"].area
-
     rep_3857 = gdf_3857.geometry.representative_point()
     rep_wgs84 = gpd.GeoSeries(rep_3857, crs="EPSG:3857").to_crs(epsg=4326)
-
     # 释放中间大对象
     del geom_only, gdf_3857, rep_3857
     gc.collect()
-
     # ---- 4) 自动识别 bool 展开列 keys ----
     bool_keys = detect_bool_expand_keys(gdf, EXPAND_KEYS)
-
+    print("infering...")
     # ---- 5) cate 推断（保持你的逻辑；若仍内存/速度不够再做分块/向量化）----
     cate_series = gdf.apply(
         lambda r: infer_cate_row(r, EXPAND_KEYS, SUBTYPE_TO_CATE, bool_keys),
         axis=1
     )
-
     # ---- 6) 输出组装 ----
     out = pd.DataFrame(index=gdf.index, columns=out_cols)
     out["name"] = gdf["name"] if "name" in gdf.columns else pd.NA
     out["poi_id"] = gdf["id"] if "id" in gdf.columns else pd.NA
-
     if "osm_type" in gdf.columns and "id" in gdf.columns:
         out["osm_way_id"] = gdf["id"].where(gdf["osm_type"].astype(str).str.lower().eq("way"), pd.NA)
     else:
         out["osm_way_id"] = pd.NA
-
     out["building"] = gdf["building"] if "building" in gdf.columns else pd.NA
     out["amenity"] = gdf["amenity"] if "amenity" in gdf.columns else pd.NA
-
     out["centroid"] = rep_wgs84.to_wkt()
     out["area"] = area_m2.round(1)
     out["area_ft2"] = (area_m2 * 10.763910416709722).round(1)
     out["lat"] = rep_wgs84.y
     out["lng"] = rep_wgs84.x
     out["cate"] = cate_series
-
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     out.to_csv(save_path, index=False, encoding="utf-8")
-
     # 最后释放
     del gdf, out, rep_wgs84, cate_series, area_m2
     gc.collect()
