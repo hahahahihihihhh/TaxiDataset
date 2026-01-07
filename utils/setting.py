@@ -316,10 +316,18 @@ METEOROLOGICAL_VARS = [
     "temperature_2m",   # 气温(C)
     "precipitation",    # 降雨量(mm)
     "cloud_cover",  # 总云量(%)
-    "wind_speed_10m",   # 风速(m/s)
+    "wind_speed_10m",   # 风速(km/s)
     "relative_humidity_2m", # 相对湿度(%)
     "surface_pressure", # 气压(hPa)
 ]
+METEOROLOGICAL_VARS2LABELS = {
+    "temperature_2m": "Temperature(°C)",
+    "precipitation": "Precipitation(mm)",
+    "cloud_cover": "Cloud Cover(%)",
+    "wind_speed_10m": "Wind Speed(km/h)",
+    "relative_humidity_2m": "Relative Humidity(%)",
+    "surface_pressure": "Surface Pressure(hPa)",
+}
 METEOROLOGICAL_VARS_DIVIDE = {
     "temperature_2m": {  # 单位: °C, 参考 WMO CIMO Guide
         -10: "extreme_cold",
@@ -332,7 +340,7 @@ METEOROLOGICAL_VARS_DIVIDE = {
         25: "hot",
         30: "very_hot",
         35: "extreme_hot",
-        float("inf"): "scorching"
+        40: "scorching"
     },
     "precipitation": {  # 单位: mm, 参考 WMO FM12 SYNOP Manual / NOAA Precipitation Intensity
         0: "no_rain",
@@ -341,7 +349,6 @@ METEOROLOGICAL_VARS_DIVIDE = {
         7.6: "moderate_rain",
         50: "heavy_rain",
         100: "very_heavy_rain",
-        float("inf"): "extreme_rain"
     },
     "cloud_cover": {
         # Unit: %
@@ -353,22 +360,21 @@ METEOROLOGICAL_VARS_DIVIDE = {
         50: "partly_cloudy",
         75: "mostly_cloudy",
         100: "overcast",
-        float("inf"): "unknown_cloud"
     },
     "wind_speed_10m": {  # 单位: km/h, Beaufort 风力等级 0-12, WMO Guide
-        1.08: "calm",
-        5.4: "light_air",
-        11.88: "light_breeze",
-        19.8: "gentle_breeze",
-        28.44: "moderate_breeze",
-        38.52: "fresh_breeze",
-        49.68: "strong_breeze",
-        61.56: "near_gale",
-        74.52: "gale",
-        87.84: "strong_gale",
-        102.24: "storm",
-        117.36: "violent_storm",
-        float("inf"): "hurricane_force"
+        0.9: "calm",
+        5.9: "light_air",
+        11.9: "light_breeze",
+        19.9: "gentle_breeze",
+        28.9: "moderate_breeze",
+        38.9: "fresh_breeze",
+        49.9: "strong_breeze",
+        61.9: "near_gale",
+        74.9: "gale",
+        88.9: "strong_gale",
+        102.9: "violent_storm",
+        117.9: "storm",
+        133.0: "hurricane_force"
     },
     "relative_humidity_2m": {
         # Unit: %
@@ -380,7 +386,6 @@ METEOROLOGICAL_VARS_DIVIDE = {
         60: "medium",
         80: "high",
         100: "very_high",
-        float("inf"): "unknown_humidity"
     },
     "surface_pressure": {  # 单位: hPa, 参考 WMO 标准大气压分类
         950: "very_low_pressure",
@@ -388,7 +393,7 @@ METEOROLOGICAL_VARS_DIVIDE = {
         1010: "normal_pressure",
         1030: "high_pressure",
         1060: "very_high_pressure",
-        float("inf"): "extremely_high_pressure"
+        1100: "extremely_high_pressure"
     }
 }
 

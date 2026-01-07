@@ -161,7 +161,7 @@ def load_weather():
 
 
 def gen_weather_kg():
-    # load_weather()
+    load_weather()
     weather_kg = []
     for grid_id in range(0, H * W):
         weather_path = os.path.join(
@@ -225,7 +225,7 @@ def gen_poi_kg_chunk():
 
 
 if __name__ == "__main__":
-    gen_poi_kg()
-    # gen_weather_kg()
+    # gen_poi_kg()
+    gen_weather_kg()
     # load_weather()
     # gen_poi_kg_chunk()
