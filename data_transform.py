@@ -16,6 +16,8 @@ raw_data_grid_dir = cfg["paths"]["raw_data_grid"]["dir"]
 raw_data_grid_file = cfg["paths"]["raw_data_grid"]["file"]
 raw_data_dyna_dir = cfg["paths"]["raw_data_dyna"]["dir"]
 raw_data_dyna_file = cfg["paths"]["raw_data_dyna"]["file"]
+month_min = cfg["month_min"]
+month_max = cfg["month_max"]
 
 
 def _polygon_centroid(coord_str: str):
@@ -78,7 +80,9 @@ def convert_tdrive_grid_to_network_keep_june(
     out_dir: str,
     out_name: str,
     neighbor_mode: str = "4",
-    weight_mode: str = "link"
+    weight_mode: str = "link",
+    month_min: int = -1,
+    month_max: int = -1,
 ):
     os.makedirs(out_dir, exist_ok=True)
 
@@ -106,13 +110,15 @@ def convert_tdrive_grid_to_network_keep_june(
 
     # ===== 3) 输出网络 .dyna（只保留 6 月份）=====
     t = pd.to_datetime(grid_df["time"], utc=True, errors="coerce")
-    june_df = grid_df.loc[t.dt.month == 6].copy()
+    june_df = grid_df.loc[(t.dt.month >= month_min) & (t.dt.month <= month_max)].copy()
 
     june_df["entity_id"] = [
         rc2id[(int(r), int(c))] for r, c in zip(june_df["row_id"], june_df["column_id"])
     ]
 
     dyna = june_df.drop(columns=["row_id", "column_id", "dyna_id"], errors="ignore").reset_index(drop=True)
+    dyna["entity_id"] = pd.to_numeric(dyna["entity_id"], errors="coerce")
+    dyna = dyna.sort_values(by="entity_id", ascending=True, kind="mergesort").reindex(columns=["type", "time", "entity_id", "inflow", "outflow"])
     dyna.insert(0, "dyna_id", np.arange(len(dyna)))
 
     dyna_out = os.path.join(out_dir, f"{out_name}.dyna")
@@ -135,7 +141,9 @@ def main():
         geo_in=f"{raw_data_grid_dir}/{raw_data_grid_file}.geo",
         grid_in=f"{raw_data_grid_dir}/{raw_data_grid_file}.grid",
         out_dir=raw_data_dyna_dir,
-        out_name=raw_data_dyna_file
+        out_name=raw_data_dyna_file,
+        month_min=month_min,
+        month_max=month_max
     )
     print(result)
 

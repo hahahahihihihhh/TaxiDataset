@@ -113,13 +113,16 @@ def plot_meteor_heatmap_from_df(df_result, meteor_var="temperature_2m"):
     cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     if cbar_ticklabels is not None:
         cbar.set_ticks(cbar_ticks)
-        cbar.set_ticklabels(cbar_ticklabels, fontsize=12.5)
+        cbar.set_ticklabels(cbar_ticklabels, fontsize=10)
+    # ✅ 去掉红框中箭头指的“刻度线”（major + minor）
+    cbar.ax.tick_params(which="major", length=0)  # 不画刻度线
+    # cbar.minorticks_off()  # 关闭 minor ticks（保险）
     # --- 6) 标题 / 坐标 ---
     t0 = df_result["time"].iloc[0]
     met_label = METEOROLOGICAL_VARS2LABELS[meteor_var]
-    ax.set_title(f"{met_label} heatmap @ {t0}", fontsize=15)
-    ax.set_xlabel("longitude", fontsize=15)
-    ax.set_ylabel("latitude", fontsize=15)
+    # ax.set_title(f"{met_label} heatmap @ {t0}", fontsize=12.5)
+    ax.set_xlabel("longitude", fontsize=12.5)
+    ax.set_ylabel("latitude", fontsize=12.5)
     # 可选：把经纬度当做刻度（网格大时不建议全显示）
     xticks = np.arange(0, len(lons), step=2)
     ax.set_xticks(xticks)
@@ -127,8 +130,8 @@ def plot_meteor_heatmap_from_df(df_result, meteor_var="temperature_2m"):
     ax.set_yticks(np.arange(len(lats)))
     ax.set_yticklabels([f"{y:.2f}" for y in lats], fontsize=10)
     plt.tight_layout()
-    plt.savefig("./graph/meteorological_heatmap_t1.pdf")
-    plt.savefig("./graph/meteorological_heatmap_t1.svg")
+    plt.savefig("./graph/en/meteorological_heatmap_t1.pdf")
+    plt.savefig("./graph/en/meteorological_heatmap_t1.svg")
     plt.show()
     return
 
@@ -158,20 +161,21 @@ def plot_meteorological_var_daily(df_day, meteorological_var, date=None):
     )
     # 4) 画图
     plt.figure(figsize=(10, 5))
-    plt.plot(df_hourly["hour"], df_hourly[meteorological_var], marker="o", c="blue")
-    plt.xticks(range(0, 24), fontsize=10)
-    plt.xlabel("Hour of Day", fontsize=15)
+    plt.plot(df_hourly["hour"], df_hourly[meteorological_var], marker="o")
+    xticks = np.arange(0, 25, 2)
+    plt.xticks(xticks, [f"{h}:00" for h in xticks])
+    plt.xlabel("Time", fontsize=15)
     meteorological_label = METEOROLOGICAL_VARS2LABELS[meteorological_var]
     plt.yticks(range(0, 14, 2), fontsize=10)
     plt.ylabel(meteorological_label, fontsize=15)
     if date is None:
         # 从数据里推断日期（取第一条）
         date = df_day["time"].dt.date.iloc[0]
-    plt.title(f"{meteorological_label} daily variation @ {date}", fontsize=15)
+    # plt.title(f"{meteorological_label} daily variation @ {date}", fontsize=15)
     plt.grid(False)
     plt.tight_layout()
-    plt.savefig("./graph/meteorological_var_daily.pdf")
-    plt.savefig("./graph/meteorological_var_daily.svg")
+    plt.savefig("./graph/en/meteorological_var_daily.pdf")
+    plt.savefig("./graph/en/meteorological_var_daily.svg")
     plt.show()
     return df_hourly
 

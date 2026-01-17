@@ -1,10 +1,19 @@
 {
   "NYCTAXI": {
     "paths": {
+      "raw_data_grid": {
+        "dir": "./raw_data/NYCTAXI/NYCTAXI201401-201403_GRID",
+        "file": "NYCTAXI201401-201403"
+      },
+      "raw_data_dyna": {
+        "dir": "./raw_data/NYCTAXI/NYCTAXI20140103",
+        "file": "NYCTAXI20140103"
+      },
       "assist_data_path": "./raw_data/NYCTAXI/assist_data/",
       "prefix_path_poi": "./raw_data/NYCTAXI/assist_data/POI",
-      "prefix_path_weather": "./raw_data/NYCTAXI/assist_data/weather/2014-03",
-      "prefix_path_meteor_distr": "./raw_data/NYCTAXI/assist_data/weather/2014-03/meteor_distr",
+      "prefix_path_weather": "./raw_data/NYCTAXI/assist_data/weather/20140103",
+      "prefix_path_adj": "./raw_data/NYCTAXI/assist_data/adj",
+      "prefix_path_meteor_distr": "./raw_data/NYCTAXI/assist_data/weather/20140103/meteor_distr",
       "osm_file_path": "./raw_data/NYCTAXI/assist_data/nyc_bbox.osm.pbf",
       "pbf_chunk_dir": "./raw_data/NYCTAXI/assist_data/pbf_chunk",
       "pbf_chunk_file": "nyc_bbox_{}.osm.pbf",
@@ -12,8 +21,8 @@
       "osm_basemap_cache": "./raw_data/NYCTAXI/assist_data/cache/nyc_bbox_roads.gpkg",
       "osm_grid_file": "nyc_osm_grid.png",
       "poi_filter_file": "poi_filter.csv",
-      "weather_data_file": "nyc_weather_2014-03_{}.json",
-      "weather_all_grids_file": "nyc_weather_2014-03.csv"
+      "weather_data_file": "nyc_weather_20140103_{}.json",
+      "weather_all_grids_file": "nyc_weather_20140103.csv"
     },
     "grid": {
       "lon_min": -75.989,
@@ -24,12 +33,74 @@
       "W": 20
     },
     "time_splits": [
+      ["2014-01-01", "2014-01-10"],
+      ["2014-01-11", "2014-01-20"],
+      ["2014-01-21", "2014-01-31"],
+
+      ["2014-02-01", "2014-02-10"],
+      ["2014-02-11", "2014-02-20"],
+      ["2014-02-21", "2014-02-28"],
+
       ["2014-03-01", "2014-03-10"],
       ["2014-03-11", "2014-03-20"],
       ["2014-03-21", "2014-03-31"]
     ],
-    "start_time": "2014-03-01 00:00:00",
-    "end_time": "2014-03-31 00:00:00"
+    "start_time": "2014-01-01 00:00:00",
+    "end_time": "2014-03-31 00:00:00",
+    "month_min": 1,
+    "month_max": 3
+  },
+
+  "TDRIVE": {
+    "paths": {
+      "raw_data_grid": {
+        "dir": "./raw_data/TDRIVE/T_DRIVE20150206",
+        "file": "T_DRIVE20150206"
+      },
+      "raw_data_dyna": {
+        "dir": "./raw_data/TDRIVE/TDRIVE20150406",
+        "file": "TDRIVE20150406"
+      },
+      "assist_data_path": "./raw_data/TDRIVE/assist_data/",
+      "prefix_path_poi": "./raw_data/TDRIVE/assist_data/POI",
+      "prefix_path_weather": "./raw_data/TDRIVE/assist_data/weather/20150406",
+      "prefix_path_adj": "./raw_data/TDRIVE/assist_data/adj",
+      "prefix_path_meteor_distr": "./raw_data/TDRIVE/assist_data/weather/20150406/meteor_distr",
+      "osm_file_path": "./raw_data/TDRIVE/assist_data/beijing-251207.osm.pbf",
+      "pbf_chunk_dir": "./raw_data/TDRIVE/assist_data/pbf_chunk",
+      "pbf_chunk_file": "bj_bbox_{}.osm.pbf",
+      "poi_filter_chunk_file": "poi_filter_{}.csv",
+      "osm_basemap_cache": "./raw_data/TDRIVE/assist_data/cache/bj_bbox_roads.gpkg",
+      "osm_grid_file": "bj_osm_grid.png",
+      "poi_filter_file": "poi_filter.csv",
+      "weather_data_file": "bj_weather_20150406_{}.json",
+      "weather_all_grids_file": "bj_weather_20150406.csv"
+    },
+    "grid": {
+      "lon_min": 116.25,
+      "lon_max": 116.64,
+      "lat_min": 39.83,
+      "lat_max": 40.12,
+      "H": 32,
+      "W": 32
+    },
+    "time_splits": [
+      ["2015-04-01", "2015-04-10"],
+      ["2015-04-11", "2015-04-20"],
+      ["2015-04-21", "2015-04-30"],
+
+      ["2015-05-01", "2015-05-10"],
+      ["2015-05-11", "2015-05-20"],
+      ["2015-05-21", "2015-05-31"],
+
+      ["2015-06-01", "2015-06-10"],
+      ["2015-06-11", "2015-06-20"],
+      ["2015-06-21", "2015-06-30"]
+    ],
+    "start_time": "2015-04-30 14:00:00",
+    "end_time": "2015-06-30 14:00:00",
+    "month_min": 4,
+    "month_max": 6
   },
 
   "NYCBike": {
@@ -60,44 +131,6 @@
     ],
     "start_time": "2014-04-01 14:00:00",
     "end_time": "2014-04-30 14:00:00"
-  },
-
-  "TDRIVE": {
-    "paths": {
-      "raw_data_grid": {
-        "dir": "./raw_data/TDRIVE/T_DRIVE20150206",
-        "file": "T_DRIVE20150206"
-      },
-      "raw_data_dyna": {
-        "dir": "./raw_data/TDRIVE/TDRIVE201506",
-        "file": "TDRIVE201506"
-      },
-      "assist_data_path": "./raw_data/TDRIVE/assist_data/",
-      "prefix_path_poi": "./raw_data/TDRIVE/assist_data/POI",
-      "prefix_path_weather": "./raw_data/TDRIVE/assist_data/weather/2015-06",
-      "prefix_path_meteor_distr": "./raw_data/TDRIVE/assist_data/weather/2015-06/meteor_distr",
-      "osm_file_path": "./raw_data/TDRIVE/assist_data/beijing-251207.osm.pbf",
-      "osm_basemap_cache": "./raw_data/TDRIVE/assist_data/cache/bj_bbox_roads.gpkg",
-      "osm_grid_file": "bj_osm_grid.png",
-      "poi_filter_file": "poi_filter.csv",
-      "weather_data_file": "bj_weather_2015-06_{}.json",
-      "weather_all_grids_file": "bj_weather_2015-06.csv"
-    },
-    "grid": {
-      "lon_min": 116.25,
-      "lon_max": 116.64,
-      "lat_min": 39.83,
-      "lat_max": 40.12,
-      "H": 32,
-      "W": 32
-    },
-    "time_splits": [
-      ["2015-06-01", "2015-06-10"],
-      ["2015-06-11", "2015-06-20"],
-      ["2015-06-21", "2015-06-30"]
-    ],
-    "start_time": "2015-06-01 14:00:00",
-    "end_time": "2015-06-30 14:00:00"
   },
 
   "SZTaxi": {

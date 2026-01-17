@@ -10,13 +10,14 @@ import os
 import pandas as pd
 
 
-dataset = "NYCTAXI"
+dataset = "TDRIVE"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset]
 
 prefix_path_poi = cfg["paths"]["prefix_path_poi"]
 prefix_path_weather = cfg["paths"]["prefix_path_weather"]
+prefix_path_adj = cfg["paths"]["prefix_path_adj"]
 osm_file_path = cfg["paths"]["osm_file_path"]
 pbf_chunk_dir = cfg["paths"]["pbf_chunk_dir"]
 pbf_chunk_file = cfg["paths"]["pbf_chunk_file"]
@@ -24,6 +25,8 @@ poi_filter_chunk_file = cfg["paths"]["poi_filter_chunk_file"]
 poi_filter_file = cfg["paths"]["poi_filter_file"]
 weather_data_file = cfg["paths"]["weather_data_file"]
 weather_all_grids_file = cfg["paths"]["weather_all_grids_file"]
+raw_data_dyna_dir = cfg["paths"]["raw_data_dyna"]["dir"]
+raw_data_dyna_file = cfg["paths"]["raw_data_dyna"]["file"]
 lon_min = cfg["grid"]["lon_min"]
 lon_max = cfg["grid"]["lon_max"]
 lat_min = cfg["grid"]["lat_min"]
@@ -129,7 +132,7 @@ def load_weather():
     os.makedirs(os.path.dirname(weather_all_grids_file_path), exist_ok=True)
     weather_fields = ["grid_id", "latitude", "longitude", "time"] + list(METEOROLOGICAL_VARS)
     all_weather_data = {field: [] for field in weather_fields}
-    for grid_id in range(0, H * W):
+    for grid_id in range(0, H * W):  # H * W
         lon_center, lat_center = grid_to_center_coord(grid_id)
         # weatherbit
         # resp = requests.get(
@@ -201,6 +204,16 @@ def gen_weather_kg():
     )
 
 
+def gen_adj_kg():
+    rel_df = pd.read_csv(f"{raw_data_dyna_dir}/{raw_data_dyna_file}.rel")
+    adj_triple = []
+    for row in rel_df.values:
+        if row[4]:
+            adj_triple.append((row[2], "adj_spat", row[3]))
+    adj_kg = pd.DataFrame(adj_triple, columns=["origin", "rel", "destination"])
+    adj_kg.to_csv(f"{prefix_path_adj}/adj_kg.csv", index=False)
+
+
 def gen_poi_kg_chunk():
     # cut_osm()
     # for grid_id in range(0, H * W):
@@ -226,6 +239,6 @@ def gen_poi_kg_chunk():
 
 if __name__ == "__main__":
     # gen_poi_kg()
-    gen_weather_kg()
-    # load_weather()
+    # gen_weather_kg()
+    gen_adj_kg()
     # gen_poi_kg_chunk()
