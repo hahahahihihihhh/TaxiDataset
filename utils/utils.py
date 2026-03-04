@@ -1,5 +1,6 @@
 import gc
 import os
+import pickle
 import re
 from collections import defaultdict
 
@@ -36,7 +37,7 @@ def _build_session():
 
 _SESSION = _build_session()
 def fetch_open_meteo_hourly(longitude, latitude, start_date, end_date, hourly_vars,
-                           timezone="America/New_York", timeout=60):
+                           timezone, timeout=60):
     BASE_URL = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "longitude": longitude,
@@ -288,3 +289,10 @@ def ensure_dir(path: str):
         else os.path.dirname(path)
     if dir_path and not os.path.exists(dir_path):
         os.makedirs(dir_path, exist_ok=True)
+
+
+def dict_to_pickle(data, save_path):
+    os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
+    with open(save_path, "wb") as f:
+        pickle.dump(data, f)
+    return save_path

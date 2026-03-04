@@ -184,7 +184,7 @@ lat_min = cfg["grid"]["lat_min"]
 lat_max = cfg["grid"]["lat_max"]
 H = cfg["grid"]["H"]
 W = cfg["grid"]["W"]
-
+# 116.25 116.64 39.83 40.12
 
 def extract_osm_admin_boundaries_bbox(
         osm_pbf_path,
@@ -286,9 +286,46 @@ def plot_osm_basemap_with_grid(
     lon_unit = (lon_max - lon_min) / W
     lat_unit = (lat_max - lat_min) / H
 
+    def _annotate_grid_ids(ax, lon_min, lat_min, lon_unit, lat_unit, W, rows_full=2, half_row=True,
+                           half_side="left", start_id=1, fontsize=7):
+        """
+        给网格加编号：
+        - 从下往上（j=0最底行递增）
+        - 从左到右（i=0最左列递增）
+        - 默认：两行半（rows_full=2 + half_row=True）
+        - half_side: "left" 或 "right" 表示半行标左半还是右半
+        - start_id: 编号起点（1 或 0）
+        """
+        half_cols = W // 2
+        total_rows = rows_full + (1 if half_row else 0)
+        for j in range(total_rows):
+            # 这一行要标多少列
+            if half_row and j == rows_full:
+                if half_side == "left":
+                    i_range = range(0, half_cols)
+                else:  # "right"
+                    i_range = range(W - half_cols, W)
+            else:
+                i_range = range(0, W)
+            for i in i_range:
+                cell_id = start_id + j * W + i  # 从下到上、从左到右
+
+                cx = lon_min + (i + 0.5) * lon_unit
+                cy = lat_min + (j + 0.5) * lat_unit
+
+                ax.text(
+                    cx, cy, str(cell_id),
+                    ha="center", va="center",
+                    fontsize=fontsize,
+                    color="red",
+                    zorder=3,
+                    # 给文字加轻微底色，防止被边界/网格线干扰；不需要可删除bbox
+                    bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.55)
+                )
+
     # --- 4) 绘图（核心：参考图风格配置） ---
     # 创建画布，设置白色背景
-    fig, ax = plt.subplots(figsize=figsize, facecolor="white")
+    fig, ax = plt.subplots(figsize=figsize)
 
     # 4.1 绘制行政区填充（灰色底色，参考图风格）
     gdf_boundaries.plot(
@@ -301,19 +338,31 @@ def plot_osm_basemap_with_grid(
     )
 
     # 4.2 绘制网格外边界（白色粗线）
-    ax.plot([lon_min, lon_max], [lat_min, lat_min], color="white", linewidth=1.2, zorder=2)
-    ax.plot([lon_min, lon_max], [lat_max, lat_max], color="white", linewidth=1.2, zorder=2)
-    ax.plot([lon_min, lon_min], [lat_min, lat_max], color="white", linewidth=1.2, zorder=2)
-    ax.plot([lon_max, lon_max], [lat_min, lat_max], color="white", linewidth=1.2, zorder=2)
+    ax.plot([lon_min, lon_max], [lat_min, lat_min], color="black", linewidth=1.2, zorder=2)
+    ax.plot([lon_min, lon_max], [lat_max, lat_max], color="black", linewidth=1.2, zorder=2)
+    ax.plot([lon_min, lon_min], [lat_min, lat_max], color="black", linewidth=1.2, zorder=2)
+    ax.plot([lon_max, lon_max], [lat_min, lat_max], color="black", linewidth=1.2, zorder=2)
 
     # 4.3 绘制内部网格线（白色细线）
     for i in range(1, W):
         x = lon_min + i * lon_unit
-        ax.plot([x, x], [lat_min, lat_max], color="white", linewidth=0.6, alpha=0.8, zorder=2)
+        ax.plot([x, x], [lat_min, lat_max], color="black", linewidth=0.6, alpha=0.8, zorder=2)
     for j in range(1, H):
         y = lat_min + j * lat_unit
-        ax.plot([lon_min, lon_max], [y, y], color="white", linewidth=0.6, alpha=0.8, zorder=2)
-
+        ax.plot([lon_min, lon_max], [y, y], color="black", linewidth=0.6, alpha=0.8, zorder=2)
+    _annotate_grid_ids(
+        ax=ax,
+        lon_min=lon_min,
+        lat_min=lat_min,
+        lon_unit=lon_unit,
+        lat_unit=lat_unit,
+        W=W,
+        rows_full=2,
+        half_row=True,
+        half_side="left",  # 第三行标左半；要右半改成 "right"
+        start_id=1,  # 从1开始编号；要从0开始改成0
+        fontsize=7  # 字号：根据图大小可调 6~9
+    )
     # --- 5) 样式优化（参考图简洁风格） ---
     # 限定视图范围（无多余空白）
     ax.set_xlim(lon_min, lon_max)
@@ -322,6 +371,7 @@ def plot_osm_basemap_with_grid(
     ax.set_aspect("equal", adjustable="box")
     # 隐藏坐标轴、刻度、边框（核心：简洁风格）
     ax.axis("off")
+    ax.set_position([0, 0, 1, 1])
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
@@ -337,8 +387,8 @@ def plot_osm_basemap_with_grid(
             dpi=dpi,
             bbox_inches="tight",
             pad_inches=0,  # 无额外边距
-            facecolor="white",
-            edgecolor="none"
+            # facecolor="white",
+            # edgecolor="none"
         )
         print(f"[save] {save_path}")
     plt.show()
@@ -350,8 +400,8 @@ if __name__ == "__main__":
         basemap_cache=osm_basemap_cache,
         save_path=f"{assist_data_path}/{osm_grid_file}",
         buffer_deg=0.005,  # 轻微缓冲，确保边界完整
-        figsize=(9, 9),
+        figsize=(7, 7),
         dpi=300,
         boundary_name="北京市",  # 限定北京范围
-        admin_levels=["6"]  # 北京区级
+        admin_levels=["10"]  # 北京区级
     )

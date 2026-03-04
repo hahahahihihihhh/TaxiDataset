@@ -198,10 +198,10 @@ def analyze_weather_distr():
     # )
     # for time in times:
     #     weather_horiz_distr_count(time)
-    for t in pd.date_range("2014-03-01T03:00", "2014-03-01T03:00", freq="H"):
-        t_str = t.strftime("%Y-%m-%dT%H:%M")
-        weather_horiz_distr_show(t_str, "wind_speed_10m")
-    # weather_time_distr_show("2014-03-01", "wind_speed_10m")
+    # for t in pd.date_range("2014-03-01T03:00", "2014-03-01T03:00", freq="H"):
+    #     t_str = t.strftime("%Y-%m-%dT%H:%M")
+    #     weather_horiz_distr_show(t_str, "wind_speed_10m")
+    weather_time_distr_show("2014-03-01", "wind_speed_10m")
 
 
 if __name__ == "__main__":

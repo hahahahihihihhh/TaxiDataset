@@ -302,7 +302,7 @@ for s, e, lv in segments:
     ax.axvspan(s, e, facecolor="C0", alpha=float(alpha_map[lv]), edgecolor="none")
 
 plt.xlabel("Time")
-plt.ylabel("Traffic Flow(inflow + outflow)")
+plt.ylabel("Traffic Volume (Inflow + Outflow)")
 plt.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
 
 xticks = np.arange(12, 25, 2)

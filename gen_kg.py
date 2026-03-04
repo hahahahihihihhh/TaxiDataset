@@ -33,6 +33,7 @@ lat_min = cfg["grid"]["lat_min"]
 lat_max = cfg["grid"]["lat_max"]
 H = cfg["grid"]["H"]
 W = cfg["grid"]["W"]
+timezone = cfg["timezone"]
 time_splits = cfg["time_splits"]
 lon_unit = (lon_max - lon_min) / W
 lat_unit = (lat_max - lat_min) / H
@@ -149,7 +150,7 @@ def load_weather():
         if not os.path.exists(weather_data_file_path):
             all_resp = []
             for time_split in time_splits:
-                resp = fetch_open_meteo_hourly(lon_center, lat_center, time_split[0], time_split[1], METEOROLOGICAL_VARS)
+                resp = fetch_open_meteo_hourly(lon_center, lat_center, time_split[0], time_split[1], METEOROLOGICAL_VARS, timezone)
                 all_resp.append(resp)
             weather_data = merge_open_meteo_hourly_responses_in_order(all_resp)
             with open(weather_data_file_path, "w", encoding="utf-8") as file:
@@ -204,14 +205,49 @@ def gen_weather_kg():
     )
 
 
+# y 向上为正时的方向定义（与你前面确定的一致）
+DELTA2REL = {
+    ( 1,  0): "adj0",  # 右
+    ( 1,  1): "adj1",  # 右上
+    ( 0,  1): "adj2",  # 上
+    (-1,  1): "adj3",  # 左上
+    (-1,  0): "adj4",  # 左
+    (-1, -1): "adj5",  # 左下
+    ( 0, -1): "adj6",  # 下
+    ( 1, -1): "adj7",  # 右下
+}
 def gen_adj_kg():
-    rel_df = pd.read_csv(f"{raw_data_dyna_dir}/{raw_data_dyna_file}.rel")
     adj_triple = []
+    adjx_triple = []
+    rel_df = pd.read_csv(f"{raw_data_dyna_dir}/{raw_data_dyna_file}.rel")
     for row in rel_df.values:
         if row[4]:
-            adj_triple.append((row[2], "adj_spat", row[3]))
-    adj_kg = pd.DataFrame(adj_triple, columns=["origin", "rel", "destination"])
-    adj_kg.to_csv(f"{prefix_path_adj}/adj_kg.csv", index=False)
+            adj_triple.append((row[2], "adj", row[3]))
+    pd.DataFrame(adj_triple, columns=["origin", "rel", "destination"]) \
+        .to_csv(f"{prefix_path_adj}/adj_kg.csv", index=False)
+
+    def rc_to_id(row, col):
+        return row * W + col
+    # 主动构造 8 邻接 adjx
+    for row in range(H):
+        for col in range(W):
+            u = rc_to_id(row, col)
+            xu, yu = col, row
+            for drow in (-1, 0, 1):
+                for dcol in (-1, 0, 1):
+                    if drow == 0 and dcol == 0:
+                        continue
+                    nr, nc = row + drow, col + dcol
+                    if not (0 <= nr < H and 0 <= nc < W):
+                        continue
+                    v = rc_to_id(nr, nc)
+                    xv, yv = nc, nr
+                    dx, dy = (xv - xu, yv - yu)
+                    rel_name = DELTA2REL.get((dx, dy))
+                    if rel_name is not None:
+                        adjx_triple.append((u, rel_name, v))
+    pd.DataFrame(adjx_triple, columns=["origin", "rel", "destination"]) \
+      .to_csv(f"{prefix_path_adj}/adjx_kg.csv", index=False)
 
 
 def gen_poi_kg_chunk():
